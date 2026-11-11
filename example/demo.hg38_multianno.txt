@@ -1,0 +1,9 @@
+Chr	Start	End	Ref	Alt	Func.refGene	Gene.refGene	GeneDetail.refGene	ExonicFunc.refGene	AAChange.refGene	gnomad41_genome_AF	CLNSIG	Otherinfo1	Otherinfo2	Otherinfo3	Otherinfo4	Otherinfo5	Otherinfo6	Otherinfo7	Otherinfo8	Otherinfo9	Otherinfo10	Otherinfo11	Otherinfo12	Otherinfo13
+chr1	1000500	1000500	C	T	intronic	TTN	.	.	.	0.31	.	het	50	30	chr1	1000500	.	C	T	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chr12	120291800	120291800	A	G	ncRNA_exonic	RNU4-2	.	.	.	.	.	het	50	30	chr12	120291800	.	A	G	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chr12	120291950	120291950	C	T	upstream	RNU4-2	dist=60	.	.	0.002	.	het	50	30	chr12	120291950	.	C	T	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chr12	120310000	120310000	G	A	intergenic	RNU4-2;RNU4-1	dist=18000;dist=25000	.	.	0.21	.	het	50	30	chr12	120310000	.	G	A	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chr17	43045000	43045000	A	T	splicing	BRCA1	NM_007294:exon5:c.200+1A>T	.	.	.	Pathogenic	het	50	30	chr17	43045000	.	A	T	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chr17	43046000	43046000	A	G	exonic	BRCA1;NBR2	.	synonymous SNV	BRCA1:NM_007294:exon10:c.A3000G:p.L1000L	0.01	Benign	het	50	30	chr17	43046000	.	A	G	50	PASS	DP=30	GT:AD:DP	0/1:15,15:30
+chrX	31000000	31000000	G	A	intronic	DMD	.	.	.	0.05	.	hom	50	30	chrX	31000000	.	G	A	50	PASS	DP=30	GT:AD:DP	1/1:0,30:30
+chrX	31100000	31100000	C	T	exonic	DMD	.	stopgain	DMD:NM_004006:exon10:c.C1000T:p.R334X	.	Pathogenic	hom	50	30	chrX	31100000	.	C	T	50	PASS	DP=30	GT:AD:DP	1/1:0,30:30
