@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-gene_search.py
-==============
-Pull the variants of selected genes out of ANNOVAR ``*_multianno`` tables.
+AGG - ANNOVAR Gene Gleaner
+==========================
+Gene-Centric Variant Extraction from ANNOVAR
 
 A GATK -> ANNOVAR (table_annovar.pl) run leaves one row per variant for the
-whole exome/genome. This tool keeps only the rows whose gene column
+whole exome/genome. AGG keeps only the rows whose gene column
 (default ``Gene.refGene``) contains a requested gene symbol and writes them to
 ``multianno_<GENE>.csv`` / ``.xlsx`` (one file per gene), or to a single merged
 file for a gene panel.
 
-Run ``python gene_search.py -h`` for all options.
+Run ``python agg.py -h`` for all options.
+
+Seung Won Chae, Moon-woo Seong
+Molecular Diagnostics Laboratory, Department of Laboratory Medicine,
+Seoul National University Hospital
+https://github.com/CleanCham-lab/AGG  (MIT License)
 """
 
 from __future__ import annotations
@@ -36,14 +41,14 @@ from pathlib import Path
 if sys.version_info < (3, 8):
     sys.exit("[ERROR] Python >= 3.8 is required.")
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 
 # --------------------------------------------------------------------------- #
 # dependencies
 #   Missing packages (pandas, numpy, openpyxl) are installed automatically into
 #   the Python that runs this script ("<python> -m pip install ...").
-#   Turn this off with -no-install or the environment variable GENE_SEARCH_NO_INSTALL=1.
+#   Turn this off with -no-install or the environment variable AGG_NO_INSTALL=1.
 # --------------------------------------------------------------------------- #
 PIP_SPECS = {
     "pandas": "pandas>=1.4",
@@ -55,7 +60,7 @@ PIP_SPECS = {
 }
 AUTO_INSTALL = (
     not any(arg in ("-no-install", "--no-install") for arg in sys.argv[1:])
-    and os.environ.get("GENE_SEARCH_NO_INSTALL", "").lower() not in ("1", "true", "yes")
+    and os.environ.get("AGG_NO_INSTALL", "").lower() not in ("1", "true", "yes")
 )
 
 
@@ -138,7 +143,7 @@ def ensure_package(module: str):
 pd = ensure_package("pandas")
 np = ensure_package("numpy")
 
-LOG = logging.getLogger("gene_search")
+LOG = logging.getLogger("agg")
 
 # Multiple genes in one ANNOVAR cell are joined by ';' (current versions) or ','
 # (older versions); values that went through a VCF may carry the escaped '\x3b'.
@@ -160,22 +165,22 @@ csv.field_size_limit(2**31 - 1)
 EXAMPLES = r"""
 examples:
   # one gene, one sample
-  python gene_search.py -i S01.hg38_multianno.txt -g RNU4-2 -o results
+  python agg.py -i S01.hg38_multianno.txt -g RNU4-2 -o results
 
   # several genes typed on the command line, Excel output
-  python gene_search.py -i S01.hg38_multianno.txt -g DMD BRCA1,BRCA2 -o results -f xlsx
+  python agg.py -i S01.hg38_multianno.txt -g DMD BRCA1,BRCA2 -o results -f xlsx
 
   # gene panel from an Excel list (A = No., B = Gene), every multianno file in a folder
-  python gene_search.py -i annovar_out/ -l panel.xlsx -o results -f xlsx
+  python agg.py -i annovar_out/ -l panel.xlsx -o results -f xlsx
 
   # the same panel written as one merged file: results/multianno_panel.xlsx
-  python gene_search.py -i annovar_out/ -l panel.xlsx -o results -f xlsx -merge
+  python agg.py -i annovar_out/ -l panel.xlsx -o results -f xlsx -merge
 
   # keep only exonic / splicing / ncRNA_exonic variants
-  python gene_search.py -i S01.hg38_multianno.txt -l panel.xlsx -o results -func exonic splicing ncRNA_exonic
+  python agg.py -i S01.hg38_multianno.txt -l panel.xlsx -o results -func exonic splicing ncRNA_exonic
 
   # Windows paths work as well
-  python gene_search.py -i "Y:\ICLR_res\Annotated_VCF" -g RNU4-2 -o "C:\Users\me\Desktop\out"
+  python agg.py -i "Y:\project\Annotated_VCF" -g RNU4-2 -o "C:\Users\me\Desktop\out"
 """
 
 
@@ -638,9 +643,11 @@ def build_summary(targets, groups, combined, removed, func_col, multi, written) 
 # --------------------------------------------------------------------------- #
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="gene_search.py",
-        description="Extract the variants of selected genes from ANNOVAR *_multianno tables "
-                    "and save them as multianno_<GENE>.csv / .xlsx.",
+        prog="agg.py",
+        description=f"AGG v{__version__} - ANNOVAR Gene Gleaner\n"
+                    "Gene-Centric Variant Extraction from ANNOVAR\n\n"
+                    "Extract the variants of selected genes (one gene or a gene panel) from ANNOVAR\n"
+                    "*_multianno tables and save them as multianno_<GENE>.csv / .xlsx.",
         epilog=EXAMPLES,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         allow_abbrev=False,
@@ -689,9 +696,9 @@ def parse_args(argv=None):
     misc_grp.add_argument("-xlsx-text", "--xlsx-text", action="store_true",
                           help="in xlsx output keep every cell as text (default: numeric columns become numbers)")
     misc_grp.add_argument("-no-install", "--no-install", action="store_true",
-                          help="do not pip-install missing packages automatically (also: GENE_SEARCH_NO_INSTALL=1)")
+                          help="do not pip-install missing packages automatically (also: AGG_NO_INSTALL=1)")
     misc_grp.add_argument("-q", "--quiet", action="store_true", help="only print warnings and errors")
-    misc_grp.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
+    misc_grp.add_argument("-v", "--version", action="version", version=f"AGG {__version__} - ANNOVAR Gene Gleaner")
 
     args = parser.parse_args(argv)
     if not args.gene and not args.gene_list:
@@ -704,6 +711,7 @@ def parse_args(argv=None):
 def main(argv=None) -> int:
     args = parse_args(argv)
     _setup_logging(args.quiet)
+    LOG.info("AGG v%s - ANNOVAR Gene Gleaner", __version__)
     _check_versions()
     if args.format == "xlsx":
         _require_openpyxl("xlsx output")

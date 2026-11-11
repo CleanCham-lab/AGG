@@ -1,8 +1,22 @@
-# gene_search
+<p align="center">
+  <img src="assets/agg_logo.png" alt="AGG - ANNOVAR Gene Gleaner" width="680">
+</p>
 
-Pull the variants of the genes you care about out of ANNOVAR `*_multianno` tables.
+<h1 align="center">AGG — ANNOVAR Gene Gleaner</h1>
 
-After a **GATK → ANNOVAR** (`table_annovar.pl`) run, a single exome or genome yields tens of thousands to millions of annotated rows. `gene_search.py` keeps only the rows whose gene column (default `Gene.refGene`) contains the requested gene symbol(s) and saves them as
+<p align="center"><b>Gene-Centric Variant Extraction from ANNOVAR</b></p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green.svg"></a>
+  <img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-blue.svg">
+  <a href="https://github.com/CleanCham-lab/AGG/releases"><img alt="Release" src="https://img.shields.io/github/v/release/CleanCham-lab/AGG"></a>
+</p>
+
+<p align="center"><b>English</b> | <a href="README.ko.md">한국어</a></p>
+
+---
+
+After a **GATK → ANNOVAR** (`table_annovar.pl`) run, a single exome or genome yields tens of thousands to millions of annotated rows. **AGG** keeps only the rows whose gene column (default `Gene.refGene`) contains the gene(s) you ask for, and saves them as
 
 ```
 multianno_<GENE>.csv   or   multianno_<GENE>.xlsx
@@ -10,38 +24,42 @@ multianno_<GENE>.csv   or   multianno_<GENE>.xlsx
 
 one file per gene, or one merged file for a whole gene panel.
 
----
+- one gene on the command line, or a gene panel from an Excel list
+- one sample, a folder of samples, or a glob pattern
+- exact gene-symbol matching that understands ANNOVAR's multi-gene cells
+- CSV or Excel output, plus a per-gene summary
+- missing Python packages are installed automatically on first run
 
 ## Install
 
-Python ≥ 3.8. Just download and run:
+Python ≥ 3.8. Download and run:
 
 ```bash
-git clone https://github.com/CleanCham-lab/gene_search.git
-cd gene_search
-python gene_search.py -h
+git clone https://github.com/CleanCham-lab/AGG.git
+cd AGG
+python agg.py -h
 ```
 
-**Missing packages are installed automatically.** If pandas / numpy (or openpyxl, needed only for `.xlsx` input/output) are not found, the script runs `<this python> -m pip install ...` once and continues — inside a conda env or venv they go there, otherwise to the user site (`--user`). An already-installed but too old pandas (< 1.4) is reported, not upgraded, so other tools in the same environment are not affected. Tested with pandas 1.5, 2.2 and 3.0.
+**Missing packages are installed automatically.** If pandas / numpy (or openpyxl, needed only for `.xlsx` input/output) are not found, AGG runs `<this python> -m pip install ...` once and continues — inside a conda env or venv they go there, otherwise to the user site (`--user`). An already-installed but too old pandas (< 1.4) is reported, not upgraded, so other tools in the same environment are not affected. Tested with pandas 1.5, 2.2 and 3.0.
 
 To manage packages yourself instead:
 
 ```bash
 python -m pip install -r requirements.txt
-python gene_search.py ... -no-install          # or: export GENE_SEARCH_NO_INSTALL=1
+python agg.py ... -no-install          # or: export AGG_NO_INSTALL=1
 ```
 
-If the automatic install fails (no internet, SSL-inspection proxy, OS-managed Python), the script stops and prints the exact `pip install` command and the likely cause.
+If the automatic install fails (no internet, SSL-inspection proxy, OS-managed Python), AGG stops and prints the exact `pip install` command and the likely cause.
 
 ## Quick start
 
 ```bash
 # one gene
-python gene_search.py -i example/demo.hg38_multianno.txt -gene RNU4-2 -o results
+python agg.py -i example/demo.hg38_multianno.txt -gene RNU4-2 -o results
 # -> results/multianno_RNU4-2.csv
 
 # a gene panel from Excel, Excel output
-python gene_search.py -i example/demo.hg38_multianno.txt -l example/gene_list_example.xlsx -o results -f xlsx
+python agg.py -i example/demo.hg38_multianno.txt -l example/gene_list_example.xlsx -o results -f xlsx
 # -> results/multianno_RNU4-2.xlsx, multianno_DMD.xlsx, multianno_BRCA1.xlsx
 #    results/multianno_gene_list_example_summary.xlsx
 ```
@@ -50,22 +68,22 @@ More examples
 
 ```bash
 # several genes on the command line (space- or comma-separated)
-python gene_search.py -i S01.hg38_multianno.txt -g DMD BRCA1,BRCA2 -o results
+python agg.py -i S01.hg38_multianno.txt -g DMD BRCA1,BRCA2 -o results
 
 # every multianno file in a folder (adds a "Sample" column)
-python gene_search.py -i annovar_out/ -l panel.xlsx -o results -f xlsx
+python agg.py -i annovar_out/ -l panel.xlsx -o results -f xlsx
 
 # the whole panel in ONE file -> results/multianno_panel.xlsx (adds a "Matched_Gene" column)
-python gene_search.py -i annovar_out/ -l panel.xlsx -o results -f xlsx -merge
+python agg.py -i annovar_out/ -l panel.xlsx -o results -f xlsx -merge
 
 # only exonic / splicing / ncRNA_exonic variants
-python gene_search.py -i S01.hg38_multianno.txt -l panel.xlsx -o results -func exonic splicing ncRNA_exonic
+python agg.py -i S01.hg38_multianno.txt -l panel.xlsx -o results -func exonic splicing ncRNA_exonic
 
 # prefix output names with a sample ID -> results/S01_multianno_DMD.csv
-python gene_search.py -i S01.hg38_multianno.txt -g DMD -o results -prefix S01
+python agg.py -i S01.hg38_multianno.txt -g DMD -o results -prefix S01
 
 # Windows paths
-python gene_search.py -i "Y:\project\Annotated_VCF" -g RNU4-2 -o "C:\Users\me\Desktop\out"
+python agg.py -i "Y:\project\Annotated_VCF" -g RNU4-2 -o "C:\Users\me\Desktop\out"
 ```
 
 Every option has a single-dash form (ANNOVAR style, `-gene`) and a double-dash form (`--gene`).
@@ -108,8 +126,9 @@ See `example/gene_list_example.xlsx`.
 | `-pattern` | file patterns used when `-i` is a directory (default `*multianno.txt`, `*multianno.txt.gz`, `*multianno.csv`, `*multianno.csv.gz`) |
 | `-chunksize` | rows read at a time (default 200000) |
 | `-xlsx-text` | keep every xlsx cell as text (default: numeric columns become numbers so they sort/filter correctly in Excel) |
-| `-no-install` | do not pip-install missing packages (same as `GENE_SEARCH_NO_INSTALL=1`) |
+| `-no-install` | do not pip-install missing packages (same as `AGG_NO_INSTALL=1`) |
 | `-q` | quiet: warnings and errors only |
+| `-v` | show the version |
 
 ## Output
 
@@ -139,11 +158,21 @@ See `example/gene_list_example.xlsx`.
 
 ## Example data
 
-`example/demo.hg38_multianno.txt` is a small **synthetic** table (made-up variants) in ANNOVAR format for trying the tool; `example/gene_list_example.xlsx` is a 4-gene list in the A = No. / B = Gene layout.
+`example/demo.hg38_multianno.txt` is a small **synthetic** table (made-up variants) in ANNOVAR format for trying AGG; `example/gene_list_example.xlsx` is a 4-gene list in the A = No. / B = Gene layout.
 
-## Author
+## Authors
 
-Seung Won Chae — Molecular Diagnostics Laboratory, Department of Laboratory Medicine, Seoul National University Hospital
+- **Seung Won Chae** — developer
+- **Moon-woo Seong** — principal investigator
+
+Molecular Diagnostics Laboratory, Department of Laboratory Medicine, Seoul National University Hospital, Seoul, Republic of Korea<br>
+Cancer Research Institute, Seoul National University, Seoul, Republic of Korea
+
+## Citation
+
+If AGG is useful in your work, please cite this repository:
+
+> Chae SW, Seong MW. AGG: ANNOVAR Gene Gleaner — Gene-Centric Variant Extraction from ANNOVAR. https://github.com/CleanCham-lab/AGG
 
 ## License
 
